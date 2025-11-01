@@ -45,20 +45,25 @@ npm run typecheck    # 任意：型チェック
 生成直後のディレクトリ構成は次の通り。
 
 ```text
-my-blog-app/
+ts-blog-app/
 ├── app/
-│   ├── entry.client.tsx
-│   ├── entry.server.tsx
+│   ├── app.css
 │   ├── root.tsx
-│   └── routes/
-│       └── _index.tsx
+│   ├── routes.ts
+│   ├── routes/
+│   │   └── home.tsx
+│   └── welcome/
+│       ├── logo-dark.svg
+│       ├── logo-light.svg
+│       └── welcome.tsx
 ├── public/
 ├── package.json
+├── react-router.config.ts
 ├── tsconfig.json
 └── vite.config.ts
 ```
 
-`app/routes/` 以下にブログ用のルートモジュール（`posts.new.tsx` など）を追加していく。
+`app/routes.ts` でルーティング定義を行い、`app/routes/` 以下にページごとのモジュールを追加していく。
 
 ### Step 4: 開発サーバーの起動
 
