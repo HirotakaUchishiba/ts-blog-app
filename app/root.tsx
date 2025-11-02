@@ -58,12 +58,20 @@ export default function App() {
           <Link to="/" className="text-lg font-semibold text-slate-900">
             シンプルブログ
           </Link>
-          <Link
-            to="/"
-            className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
-          >
-            記事一覧
-          </Link>
+          <div className="flex items-center gap-3 text-sm">
+            <Link
+              to="/"
+              className="rounded-md border border-slate-200 px-3 py-1.5 text-slate-700 hover:bg-slate-100"
+            >
+              記事一覧
+            </Link>
+            <Link
+              to="/posts/new"
+              className="rounded-md bg-slate-900 px-3 py-1.5 text-white hover:bg-slate-700"
+            >
+              新規投稿
+            </Link>
+          </div>
         </nav>
       </header>
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
