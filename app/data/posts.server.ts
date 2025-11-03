@@ -46,3 +46,8 @@ export async function createPost(input: {
 export async function deletePost(id: string): Promise<void> {
   posts = posts.filter((post) => post.id !== id);
 }
+
+// テスト用: すべての記事を削除する
+export async function clearAllPosts(): Promise<void> {
+  posts = [];
+}

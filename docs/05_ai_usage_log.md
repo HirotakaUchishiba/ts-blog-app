@@ -173,3 +173,57 @@
   - **エラーレスポンスの検証**: `throw new Response(...)` された場合の検証方法を理解した
   - **リダイレクトの検証**: `redirect()` のレスポンスステータスコードや `Location` ヘッダーの確認方法を理解した
   - 仕様書を作成することで、テスト実装前にテスト方針を明確にでき、実装時の迷いが減る
+
+### loader/actionのテストコード実装
+* **AIにさせたこと:**
+  - テスト仕様書（`08_test_specification.md`）に基づいて、実際のテストコードを実装してもらった
+  - Vitestの設定ファイル作成、テスト用ヘルパー関数の追加、各ルートファイルに対応するテストファイルの作成を依頼した
+
+* **利用の流れ:**
+  1. テスト仕様書を作成した後、実際にテストコードを実装したいと考えた
+  2. AIにテストコードの実装を依頼し、以下の作業を実施してもらった:
+     - Vitestとテスト関連の依存関係のインストール
+     - `vitest.config.ts`の作成
+     - `package.json`にテストスクリプトの追加
+     - `app/data/posts.server.ts`にテスト用の`clearAllPosts()`関数の追加
+     - `app/routes/_index.test.tsx`の作成（2テストケース）
+     - `app/routes/posts.$postId.test.tsx`の作成（6テストケース）
+     - `app/routes/posts.new.test.tsx`の作成（6テストケース）
+  3. 実装後、型エラーが発生したため、`Route.LoaderArgs`と`Route.ActionArgs`の型定義に必要な`unstable_pattern`プロパティの追加と型アサーション（`as unknown as`）の使用を修正してもらった
+  4. 全14テストケースが正常にパスすることを確認
+
+* **人間のチェック観点:**
+  - 実装されたテストコードが仕様書の要件を満たしているか確認
+  - テストケースが正常系・異常系を適切にカバーしているか確認
+  - 型エラーが解決され、TypeScriptの型チェックが通るか確認
+  - テスト実行が成功し、すべてのテストケースがパスするか確認
+
+* **学んだこと・メモ:**
+  - **Vitest設定**: React Routerのプラグインはテスト環境では不要なため、`vitest.config.ts`では`tsconfigPaths`のみを使用
+  - **テスト用ヘルパー関数**: データストアをクリアする`clearAllPosts()`関数を追加し、`beforeEach`で呼び出すことでテスト間の独立性を保証
+  - **型アサーションの必要性**: `Route.LoaderArgs`や`Route.ActionArgs`には`unstable_pattern`プロパティが必要だが、テストでは使用しないため`as unknown as`で型アサーションを使用
+  - **Requestオブジェクトの作成**: loader/actionの引数としてWeb標準の`Request`オブジェクトを作成し、必要に応じて`FormData`を`body`として設定
+  - **テスト実行**: `npm test -- --run`でテストを実行し、`npm run typecheck`で型チェックも併せて確認
+
+### loader/actionテストコードの書き方の特徴についての確認
+* **AIにさせたこと:**
+  - 実装したテストコードを確認し、loader/actionをテストする際に通常のテストコードとは異なる書き方になった箇所を説明してもらった
+
+* **利用の流れ:**
+  1. テストコードを実装した後、loader/action特有のテストコードの書き方について疑問を持った
+  2. AIに実装したテストコードを確認してもらい、通常のテストコードと異なる箇所を説明してもらった
+
+* **人間のチェック観点:**
+  - 説明された違いが実際のテストコードと一致しているか確認
+  - loader/action特有の書き方が理解できたか確認
+  - 今後のテストコード作成時に同様のパターンを適用できるか確認
+
+* **学んだこと・メモ:**
+  - **Route.LoaderArgs/Route.ActionArgs型を使ったモックオブジェクト**: React Routerが生成する型定義に合わせたモックオブジェクトを作成する必要がある。通常のテストでは関数の引数を直接渡すが、loader/actionでは特定の構造のオブジェクトを渡す必要がある
+  - **unstable_patternプロパティと型アサーション**: React Router v7の型定義では`unstable_pattern`が必須だが、テストでは使用しないため、空文字列を設定し`as unknown as`で型アサーションを使用する必要がある
+  - **Requestオブジェクトの直接作成**: loader/actionではWeb標準の`Request`オブジェクトを作成し、特にactionでは`FormData`を`body`として設定する必要がある。通常のテストでは関数の引数としてオブジェクトを直接渡すことが多い
+  - **Responseオブジェクトがthrowされる場合の検証**: loader/actionでは`Response`オブジェクトをthrowするため、`await expect(...).rejects.toThrow(Response)`を使用し、さらに`catch`ブロックで`error.status`や`error.text()`を検証する必要がある。通常のテストでは`Error`をthrowして検証することが多い
+  - **リダイレクトの検証方法**: `redirect()`は`Response`オブジェクトを返すため、`response.status`が300-399の範囲であることと`response.headers.get("Location")`を確認する必要がある。通常のテストでは戻り値がオブジェクトやプリミティブであることが多く、このような検証は不要
+  - **FormDataの扱い**: actionでは`FormData`を作成して`Request`の`body`に設定する必要がある。通常のテストでは関数の引数としてオブジェクトを直接渡すことが多い
+  - **統合テストとしてのデータストアの扱い**: データレイヤー（`posts.server.ts`）をモック化せず、実際のインメモリデータを使用して統合テストとして実装した。通常の単体テストでは依存関係をモック化することが多い
+  - loader/actionのテストは、Web標準のAPI（Fetch API）に基づいているため、通常の関数テストとは異なるアプローチが必要になることが理解できた
