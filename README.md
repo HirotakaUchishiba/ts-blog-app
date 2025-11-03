@@ -185,6 +185,7 @@ docker run -p 3000:3000 ts-blog-app
 - `03_setup_guide.md` - セットアップガイド
 - `04_implementation_plan.md` - 実装計画
 - `08_test_specification.md` - テスト仕様
+- `09_technical_interview.md` - 技術面談シミュレーション（ジュニアエンジニア向け）
 
 ## ⚠️ 注意事項
 
