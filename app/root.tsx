@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  Link,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -23,16 +24,24 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+export const meta: Route.MetaFunction = () => [
+  { title: "シンプルブログ" },
+  {
+    name: "description",
+    content: "React Router の loader/action を利用したシンプルなブログアプリ",
+  },
+];
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ja">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="bg-slate-50 text-slate-900">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -42,31 +51,64 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <div className="min-h-screen flex flex-col">
+      <header className="border-b border-slate-200 bg-white">
+        <nav className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4">
+          <Link to="/" className="text-lg font-semibold text-slate-900">
+            シンプルブログ
+          </Link>
+          <div className="flex items-center gap-3 text-sm">
+            <Link
+              to="/"
+              className="rounded-md border border-slate-200 px-3 py-1.5 text-slate-700 hover:bg-slate-100"
+            >
+              記事一覧
+            </Link>
+            <Link
+              to="/posts/new"
+              className="rounded-md bg-slate-900 px-3 py-1.5 text-white hover:bg-slate-700"
+            >
+              新規投稿
+            </Link>
+          </div>
+        </nav>
+      </header>
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
+        <Outlet />
+      </main>
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="mx-auto w-full max-w-4xl px-4 py-4 text-sm text-slate-500">
+          &copy; {new Date().getFullYear()} Simple Blog.
+        </div>
+      </footer>
+    </div>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let message = "エラーが発生しました";
+  let details = "予期しないエラーが発生しました。";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
+    if (error.status === 404) {
+      message = "ページが見つかりません";
+      details = "お探しのページは存在しないか、既に削除された可能性があります。";
+    } else {
+      details = error.statusText || details;
+    }
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
+    <main className="mx-auto mt-12 w-full max-w-3xl rounded-lg border border-red-100 bg-red-50 p-8 text-red-900">
+      <h1 className="text-2xl font-semibold">{message}</h1>
+      <p className="mt-4 leading-relaxed">{details}</p>
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
+        <pre className="mt-6 w-full overflow-x-auto rounded bg-white p-4 text-sm text-slate-900">
           <code>{stack}</code>
         </pre>
       )}
